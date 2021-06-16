@@ -80,12 +80,14 @@ const mineBlock = (args, blockInfo) => {
       Rx.range(f, t - f, Rx.asyncScheduler)
       |> RxOp.mergeMap(isGolden)
 
+   // following should be big endian
+   // https://github.com/slush0/stratum-mining/blob/b2a24d7424784cada95010232cdb79cfed481da6/mining/service.py#L136-L140
    const blockResp = (nonce) => 
       [ user
       , jobId
       , extraNonce2
       , ntime
-      , toHexLE(nonce, "u32")
+      , toHex(nonce, "u32")
       ]
 
    return Rx.from(splitNumToRanges(MAX_NONCE, threads))
