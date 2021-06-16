@@ -1,0 +1,13 @@
+{
+   "presets": [
+      ["@babel/preset-env", {
+         "targets": {
+            "node": 16
+         }
+      }]
+   ],
+   "plugins": [
+      ["@babel/plugin-proposal-pipeline-operator", {"proposal": "minimal"}],
+      ["@babel/plugin-proposal-partial-application"]
+   ]
+}
