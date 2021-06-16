@@ -1,7 +1,7 @@
 const { join, map, concat,
         take, reduce, nth } = require("ramda")
 const { toBytesLE, report, toHexLE, pickIdxs,
-        toBytes, scryptHash, lessThanEq, 
+        toBytes, scryptHash, lessThanEq, toHexBE,
         sha256d, splitNumToRanges, toHex } = require("./utils")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
@@ -16,6 +16,7 @@ const merkleLeaves = (a, b) =>
 
 const merkleRoot = (txs, cbTxId) =>
    reduce(merkleLeaves, cbTxId, txs)
+   |> toHexBE(?, "hex")
 
 const blockHeader = (blockInfo, extraNonce2) => {
    const [ extraNonce1
