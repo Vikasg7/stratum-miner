@@ -1,5 +1,5 @@
-const { join, map, values, concat,
-        take, pick, reduce, nth } = require("ramda")
+const { join, map, concat,
+        take, reduce, nth } = require("ramda")
 const { toBytesLE, report, toHexLE, pickIdxs,
         toBytes, scryptHash, lessThanEq, 
         sha256d, splitNumToRanges, toHex } = require("./utils")
