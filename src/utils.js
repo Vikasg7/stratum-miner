@@ -56,7 +56,7 @@ const pprint = (json) => JSON.stringify(json, null, 2)
 
 const splitNumToRanges = (num, divBy) => 
    concat(range(0, divBy), range(1, divBy + 1))
-   |> map(multiply(?, num / divBy | 0))
+   |> map(multiply(?, Math.ceil(num / divBy)))
    |> update(-1, num)
    |> splitEvery(divBy)
    |> apply(zip)
@@ -88,7 +88,10 @@ const diffToTarget = (diff) => {
    for (; k > 0 && diff > 1.0; k--) {
       diff /= 4294967296.0
    }
-   const m = BigInt((4.294901760e+9 / diff) | 0)
+   const m = 
+      (4.294901760e+9 / diff)
+      |> Math.ceil
+      |> BigInt
    const buf = Buffer.alloc(32)
    buf.writeUInt32LE(Number(0xffffffffn & m) >>> 0, k << 2)
    buf.writeUInt32LE(Number(m >> 32n) >>> 0, 4 + (k << 2))
