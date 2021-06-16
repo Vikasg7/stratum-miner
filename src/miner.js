@@ -1,8 +1,8 @@
 const { join, map, concat,
         take, reduce, nth } = require("ramda")
-const { toBytesLE, report, toHexLE, pickIdxs,
+const { toBytesLE, report, toHexLE, pickIdxs, toHex,
         toBytes, scryptHash, lessThanEq, toHexBE,
-        sha256d, splitNumToRanges, toHex } = require("./utils")
+        sha256d, splitNumToRanges, fourByteReverse } = require("./utils")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
 const crypto = require("crypto")
@@ -33,12 +33,15 @@ const blockHeader = (blockInfo, extraNonce2) => {
          , target
          ] = blockInfo
 
+   // Stratum protocol sends 4 bytes reversed previous block hash in mining.notify params
+   // https://stackoverflow.com/questions/66412968/hash-of-previous-block-from-stratum-protocol
+   const prevhashRev = fourByteReverse(prevHash) // four bytes = 8 bits
    const cbTxId = sha256d(coinb1 + extraNonce1 + extraNonce2 + coinb2)
    const merkelRoot = merkleRoot(merkleBranch, cbTxId)
 
    const header = 
       [ version
-      , prevHash
+      , prevhashRev
       , merkelRoot
       , ntime
       , nbits

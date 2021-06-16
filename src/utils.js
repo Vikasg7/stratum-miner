@@ -1,7 +1,7 @@
 const { createHash, scryptSync } = require("crypto")
-const { is, range, concat, map, multiply,
+const { is, range, concat, map, multiply, join,
         has, splitEvery, apply, zip, update,
-        not, curry, pick, values } = require("ramda")
+        not, curry, pick, values, reverse } = require("ramda")
 const { log } = require("console")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
@@ -130,6 +130,11 @@ const pickIdxs = (idxs, list) =>
    pick(idxs, list)
    |> values
 
+const fourByteReverse = (hex) =>
+   splitEvery(8, hex)
+   |> reverse
+   |> join("")
+
 module.exports = {
    sha256,
    sha256d,
@@ -150,5 +155,6 @@ module.exports = {
    repeatOn,
    bindCallback,
    bindNodeCallback,
-   pickIdxs: curry(pickIdxs)
+   pickIdxs: curry(pickIdxs),
+   fourByteReverse
 }
