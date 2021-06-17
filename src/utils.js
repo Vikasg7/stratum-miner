@@ -106,7 +106,7 @@ const repeatOn = (notifier) => (source) =>
    |> RxOp.repeat()
 
 // the Original implementations didn't workout for me.
-const bindCallback = (fn) => (...args) =>
+const bindCb = (fn) => (...args) =>
    new Rx.Observable((subs) => {
       fn(...args, (result) => {
          subs.next(result)
@@ -114,7 +114,7 @@ const bindCallback = (fn) => (...args) =>
       })
    })
 
-const bindNodeCallback = (fn) => (...args) =>
+const bindNodeCb = (fn) => (...args) =>
    new Rx.Observable((subs) => {
       fn(...args, (error, result) => {
          if (error) {
@@ -153,8 +153,8 @@ module.exports = {
    diffToTarget,
    notHave,
    repeatOn,
-   bindCallback,
-   bindNodeCallback,
+   bindCb,
+   bindNodeCb,
    pickIdxs: curry(pickIdxs),
    fourByteReverse
 }

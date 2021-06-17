@@ -3,8 +3,8 @@ const { has, prop, concat, propEq,
         nth, last, unnest } = require("ramda")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
-const { diffToTarget, notHave, repeatOn, pickIdxs,
-        bindCallback, bindNodeCallback } = require("./utils")
+const { diffToTarget, notHave, repeatOn, 
+        pickIdxs, bindCb, bindNodeCb } = require("./utils")
 
 const Stratum = (config) => {
    const { id, user, pass, host, port } = config
@@ -55,9 +55,9 @@ const Stratum = (config) => {
    const send = (data) =>
       JSON.stringify(data)
       |> concat(?, "\n")
-      |> socket.write
+      |> socket.write(?)
 
-   const hook = (method, params, cb) => {
+   const hookNodeCb = (method, params, cb) => {
       const data = { id, method, params }
       send(data)
       const onNext = ({error, result}) =>
@@ -68,19 +68,26 @@ const Stratum = (config) => {
       resp.subscribe(onNext, cb(?, null))
    }
 
+   const hookCb = (method, params, cb) => {
+      const data = { id, method, params }
+      send(data)
+      const resp = pullNotifications |> RxOp.take(1)
+      resp.subscribe(cb)
+   }
+
    // callback-ish versions
    // _connect :: port -> host -> cb -> socket
    const _connect   = socket.connect(?, ?, ?)
-   const _subscribe = hook("mining.subscribe", [], ?)
-   const _authorize = hook("mining.authorize", ?, ?)
-   const _submit    = hook("mining.submit", ?, ?)
-   const _close     = socket.destroy(?)
+   const _subscribe = hookNodeCb("mining.subscribe", [], ?)
+   const _authorize = hookNodeCb("mining.authorize", ?, ?)
+   const _submit    = hookCb("mining.submit", ?, ?)
 
-   const connect   = bindCallback(_connect)
-   const subscribe = bindNodeCallback(_subscribe)
-   const authorize = bindNodeCallback(_authorize)
+   const connect   = bindCb(_connect)
+   const subscribe = bindNodeCb(_subscribe)
+   const authorize = bindNodeCb(_authorize)
    // don't want to fail on error, hence bindCallback
-   const submit    = bindCallback(_submit)
+   const submit    = bindCb(_submit)
+   const close     = socket.destroy(?)
 
    const parseExtraNonce = (resp) =>
       resp
@@ -110,11 +117,12 @@ const Stratum = (config) => {
       extraNonce,
       socketError,
       blockInfo,
+      setupConnection,
       connect,
       subscribe,
       authorize,
       submit,
-      close : _close
+      close
    }
 }
 

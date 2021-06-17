@@ -111,9 +111,9 @@ const main = (args) => {
    return stratum.blockInfo
           |> RxOp.tap(reportJobId)
           |> RxOp.switchMap(mineBlock(args, ?))
-          |> RxOp.mergeMap(stratum.submit)
+          |> RxOp.mergeMap(stratum.submit(?))
           |> RxOp.tap(report(["result", "error"], ?))
-          |> RxOp.finalize(stratum.close)
+          |> RxOp.finalize(stratum.close(?))
 }
 
 module.exports = {
