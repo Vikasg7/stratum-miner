@@ -3,7 +3,7 @@ const { has, prop, concat, propEq,
         nth, last, unnest } = require("ramda")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
-const { diffToTarget, notHave, repeatOn, 
+const { diffToTarget, notHave, repeatOn, msgParser,
         pickIdxs, bindCb, bindNodeCb } = require("./utils")
 
 const Stratum = (config) => {
@@ -15,12 +15,7 @@ const Stratum = (config) => {
       Rx.fromEvent(socket, "error")
       |> RxOp.take(1)
 
-   let unused = ""
-   const parseMsgs = (data) => {
-      const parts = (unused + data).split("\n")
-      unused = parts.pop()
-      return parts       
-   } 
+   const parseMsgs = msgParser()
 
    const notifications = 
       Rx.fromEvent(socket, "data")
@@ -85,7 +80,7 @@ const Stratum = (config) => {
    const connect   = bindCb(_connect)
    const subscribe = bindNodeCb(_subscribe)
    const authorize = bindNodeCb(_authorize)
-   // don't want to fail on error, hence bindCallback
+   // don't want to fail on error, hence bindCb
    const submit    = bindCb(_submit)
    const close     = socket.destroy(?)
 

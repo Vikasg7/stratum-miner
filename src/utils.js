@@ -105,7 +105,7 @@ const repeatOn = (notifier) => (source) =>
    |> RxOp.takeUntil(notifier)
    |> RxOp.repeat()
 
-// the Original implementations didn't workout for me.
+// Rxjs implementations didn't workout for me.
 const bindCb = (fn) => (...args) =>
    new Rx.Observable((subs) => {
       fn(...args, (result) => {
@@ -135,6 +135,15 @@ const fourByteReverse = (hex) =>
    |> reverse
    |> join("")
 
+const msgParser = () => {
+   let unused = ""
+   return (data) => {
+      const parts = (unused + data).split("\n")
+      unused = parts.pop()
+      return parts
+   }
+}
+
 module.exports = {
    sha256,
    sha256d,
@@ -156,5 +165,6 @@ module.exports = {
    bindCb,
    bindNodeCb,
    pickIdxs: curry(pickIdxs),
-   fourByteReverse
+   fourByteReverse,
+   msgParser
 }
