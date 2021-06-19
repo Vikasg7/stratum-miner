@@ -1,13 +1,14 @@
 const { join, map, concat,
         take, reduce, nth } = require("ramda")
-const { toBytesLE, report, toHexLE, pickIdxs, toHex,
-        toBytes, scryptHash, lessThanEq, toHexBE,
-        sha256d, splitNumToRanges, fourByteReverse } = require("./utils")
+const { toBytesLE, report, toHexLE, toHex, sha256d,
+        toBytes, lteLE, toHexBE, pickIdxs,
+        splitNumToRanges, fourByteReverse } = require("./utils")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
 const crypto = require("crypto")
 const url = require("url")
 const Stratum = require("./stratum")
+const algos = require("crypto-algos")
 
 // Calculation of merkel root is different for stratum
 // https://bitcoin.stackexchange.com/a/20885/123460
@@ -53,7 +54,7 @@ const blockHeader = (blockInfo, extraNonce2) => {
 
 const MAX_NONCE = 2 ** 32
 
-const mineBlock = (args, blockInfo) => {
+const mineBlock = (args, hashFn, blockInfo) => {
    const { threads, user } = args
    const [ extraNonce2Size
          , jobId
@@ -72,13 +73,14 @@ const mineBlock = (args, blockInfo) => {
       |> join("")
       |> toBytes(?, "hex")
 
-   const target = toBytes(targetHex, "hex")
+   const target =
+      toBytesLE(targetHex, "hex")
 
    const isGolden = (nonce) =>
       [headBytes, toBytesLE(nonce, "u32")]
       |> Buffer.concat
-      |> scryptHash
-      |> ((hash) => lessThanEq(hash, target) ? [nonce] : [])
+      |> hashFn
+      |> ((hash) => lteLE(hash, target) ? [nonce] : [])
 
    const findGoldenNonce = ([f, t]) =>
       Rx.range(f, t - f, Rx.asyncScheduler)
@@ -105,12 +107,13 @@ const reportJobId = (blockInfo) =>
    report("jobId ", nth(2, blockInfo))
 
 const main = (args) => {
-   const { id, user, pass, address } = args
-   const { hostname: host, port } = new url.URL(address)
+   const { id, user, pass, server } = args
+   const { hostname: host, port } = new url.URL(server)
    const stratum = Stratum({host, port, id, user, pass})
+   const hashFn = algos[args.algo]
    return stratum.blockInfo
           |> RxOp.tap(reportJobId)
-          |> RxOp.switchMap(mineBlock(args, ?))
+          |> RxOp.switchMap(mineBlock(args, hashFn, ?))
           |> RxOp.mergeMap(stratum.submit(?))
           |> RxOp.tap(report(["result", "error "], ?))
           |> RxOp.finalize(stratum.close(?))

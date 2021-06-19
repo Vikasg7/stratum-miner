@@ -1,6 +1,6 @@
 const net = require("net")
 const { has, prop, concat, propEq,
-        nth, last, unnest, identity } = require("ramda")
+        nth, last, unnest } = require("ramda")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
 const { diffToTarget, notHave, repeatOn, msgParser,
@@ -8,13 +8,14 @@ const { diffToTarget, notHave, repeatOn, msgParser,
 
 const Stratum = (config) => {
    const { id, user, pass, host, port } = config
-   const ignore = identity
 
    const socket = new net.Socket()
    socket.setEncoding("utf-8")
 
-   // So that the process don't blow up.
-   socket.on("error", ignore)
+   // Need an error listener So that the process don't blow up.
+   // Also to remove any un-called connect listeners to prevent
+   // max-listener error
+   socket.on("error", socket.removeAllListeners("connect", ?))
 
    const socketClose =
       Rx.fromEvent(socket, "close")

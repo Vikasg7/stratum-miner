@@ -1,4 +1,4 @@
-const { createHash, scryptSync } = require("crypto")
+const { createHash } = require("crypto")
 const { is, range, concat, map, multiply, join,
         has, splitEvery, apply, zip, update,
         not, curry, pick, values, reverse } = require("ramda")
@@ -15,11 +15,6 @@ const sha256d = (input) =>
    input
    |> sha256
    |> sha256
-
-// https://litecoin.info/index.php/Scrypt
-const scryptHash = (bytes) =>
-   scryptSync(bytes, bytes, 32, { N: 1024, r: 1, p: 1 })
-   |> toBytesBE
 
 const uIntToBytes = (num, size, method, endianess = "") => {
    const buf = Buffer.allocUnsafe(size) 
@@ -72,8 +67,9 @@ const report = (k, v) =>
    isObject(v)      ? log(`${k} : ${v[k.trim()]}`)
                     : log(`${k} : ${v}`)
 
-const lessThanEq = (a, b) => {
-   for (let i = 0; i < a.length; i++) {
+// Compares two little-endian buffers in reverse order
+const lteLE = (a, b) => {
+   for (let i = a.length - 1; i > -1; i--) {
       let x = a[i]
       let y = b[i]
       if (x == y) continue;
@@ -83,6 +79,7 @@ const lessThanEq = (a, b) => {
 }
 
 // https://github.com/atomminer/atomminer-core/blob/4df5711d3e9dbe271ba2a00de784b1e1784e0f4d/src/utils/diff.js
+// Big-endian target
 const diffToTarget = (diff) => {
    let k = 6
    for (; k > 0 && diff > 1.0; k--) {
@@ -147,7 +144,6 @@ const msgParser = () => {
 module.exports = {
    sha256,
    sha256d,
-   scryptHash,
    toBytes,
    toHex,
    toBytesLE,
@@ -158,7 +154,7 @@ module.exports = {
    splitNumToRanges,
    isObject,
    report,
-   lessThanEq,
+   lteLE,
    diffToTarget,
    notHave,
    repeatOn,

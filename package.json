@@ -22,6 +22,7 @@
     "@babel/runtime": "^7.14.0"
   },
   "dependencies": {
+    "crypto-algos": "github:Vikasg7/crypto-algos",
     "ramda": "^0.27.1",
     "rxjs": "^7.1.0",
     "yargs": "^17.0.1"
