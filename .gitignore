@@ -2,3 +2,4 @@ node_modules/
 dist/
 start.bat
 test/
+package-lock.json

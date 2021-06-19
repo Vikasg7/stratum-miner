@@ -2,7 +2,7 @@ const yargs = require("yargs")
 const { main } = require("./miner")
 const { log } = require("console")
 const algos = require("crypto-algos")
-const { keys } = require("ramda")
+const { keys, prop } = require("ramda")
 
 const args =
    yargs
@@ -44,7 +44,8 @@ const args =
             demandOption: true,
             describe: keys(algos).join(", "),
             alias: "algo",
-            default: "scrypt"
+            default: "scrypt",
+            coerce: prop(?, algos)
          }
       })
       .help()

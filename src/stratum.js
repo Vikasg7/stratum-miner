@@ -14,7 +14,7 @@ const Stratum = (config) => {
 
    // Need an error listener So that the process don't blow up.
    // Also to remove any un-called connect listeners to prevent
-   // max-listener error
+   // max-listener error if target server don't exist
    socket.on("error", socket.removeAllListeners("connect", ?))
 
    const socketClose =

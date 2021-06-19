@@ -8,7 +8,6 @@ const RxOp = require("rxjs/operators")
 const crypto = require("crypto")
 const url = require("url")
 const Stratum = require("./stratum")
-const algos = require("crypto-algos")
 
 // Calculation of merkel root is different for stratum
 // https://bitcoin.stackexchange.com/a/20885/123460
@@ -54,8 +53,8 @@ const blockHeader = (blockInfo, extraNonce2) => {
 
 const MAX_NONCE = 2 ** 32
 
-const mineBlock = (args, hashFn, blockInfo) => {
-   const { threads, user } = args
+const mineBlock = (args, blockInfo) => {
+   const { threads, user, algo } = args
    const [ extraNonce2Size
          , jobId
          , ntime
@@ -79,7 +78,7 @@ const mineBlock = (args, hashFn, blockInfo) => {
    const isGolden = (nonce) =>
       [headBytes, toBytesLE(nonce, "u32")]
       |> Buffer.concat
-      |> hashFn
+      |> algo
       |> ((hash) => lteLE(hash, target) ? [nonce] : [])
 
    const findGoldenNonce = ([f, t]) =>
@@ -110,10 +109,9 @@ const main = (args) => {
    const { id, user, pass, server } = args
    const { hostname: host, port } = new url.URL(server)
    const stratum = Stratum({host, port, id, user, pass})
-   const hashFn = algos[args.algo]
    return stratum.blockInfo
           |> RxOp.tap(reportJobId)
-          |> RxOp.switchMap(mineBlock(args, hashFn, ?))
+          |> RxOp.switchMap(mineBlock(args, ?))
           |> RxOp.mergeMap(stratum.submit(?))
           |> RxOp.tap(report(["result", "error "], ?))
           |> RxOp.finalize(stratum.close(?))
