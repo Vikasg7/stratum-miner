@@ -1,6 +1,6 @@
 const net = require("net")
 const { has, prop, concat, propEq,
-        nth, last, unnest } = require("ramda")
+        nth, last, unnest, identity } = require("ramda")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
 const { diffToTarget, notHave, repeatOn, msgParser,
@@ -8,11 +8,16 @@ const { diffToTarget, notHave, repeatOn, msgParser,
 
 const Stratum = (config) => {
    const { id, user, pass, host, port } = config
+   const ignore = identity
 
-   const socket = new net.Socket() 
+   const socket = new net.Socket()
+   socket.setEncoding("utf-8")
 
-   const socketError =
-      Rx.fromEvent(socket, "error")
+   // So that the process don't blow up.
+   socket.on("error", ignore)
+
+   const socketClose =
+      Rx.fromEvent(socket, "close")
       |> RxOp.take(1)
 
    const parseMsgs = msgParser()
@@ -33,7 +38,8 @@ const Stratum = (config) => {
       |> RxOp.filter(notHave("method"))
 
    // Don't process the block with ClearJob = false
-   const byClearJobs = (a, b) => last(b) == false
+   const byClearJobs = (a, b) => 
+      last(b) == false
 
    const blocks =
       pushNotifications
@@ -70,19 +76,23 @@ const Stratum = (config) => {
       resp.subscribe(cb)
    }
 
-   // callback-ish versions
-   // _connect :: port -> host -> cb -> socket
-   const _connect   = socket.connect(?, ?, ?)
-   const _subscribe = hookNodeCb("mining.subscribe", [], ?)
-   const _authorize = hookNodeCb("mining.authorize", ?, ?)
-   const _submit    = hookCb("mining.submit", ?, ?)
+   const connect = 
+      socket.connect(?, ?, ?)
+      |> bindCb
 
-   const connect   = bindCb(_connect)
-   const subscribe = bindNodeCb(_subscribe)
-   const authorize = bindNodeCb(_authorize)
-   // don't want to fail on error, hence bindCb
-   const submit    = bindCb(_submit)
-   const close     = socket.destroy(?)
+   const subscribe = 
+      hookNodeCb("mining.subscribe", [], ?)
+      |> bindNodeCb
+
+   const authorize = 
+      hookNodeCb("mining.authorize", ?, ?)
+      |> bindNodeCb
+
+   const submit = 
+      hookCb("mining.submit", ?, ?)
+      |> bindCb
+
+   const close = socket.destroy(?)
 
    const parseExtraNonce = (resp) =>
       resp
@@ -103,14 +113,14 @@ const Stratum = (config) => {
 
    const blockInfo =
       Rx.combineLatest([extraNonce, blocks, target])
-      |> repeatOn(socketError)
+      |> repeatOn(socketClose)
       |> RxOp.map(unnest) // [1, 2, [[3]]] -> [1, 2, [3]]
 
    return {
       blocks,
       target,
       extraNonce,
-      socketError,
+      socketClose,
       blockInfo,
       setupConnection,
       connect,

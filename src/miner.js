@@ -97,12 +97,12 @@ const mineBlock = (args, blockInfo) => {
    return Rx.from(splitNumToRanges(MAX_NONCE, threads))
           |> RxOp.mergeMap(findGoldenNonce)
           |> RxOp.take(1)
-          |> RxOp.tap(report("nonce", ?))
+          |> RxOp.tap(report("nonce ", ?))
           |> RxOp.map(blockResp)
 }
 
 const reportJobId = (blockInfo) =>
-   report("jobId", nth(2, blockInfo))
+   report("jobId ", nth(2, blockInfo))
 
 const main = (args) => {
    const { id, user, pass, address } = args
@@ -112,7 +112,7 @@ const main = (args) => {
           |> RxOp.tap(reportJobId)
           |> RxOp.switchMap(mineBlock(args, ?))
           |> RxOp.mergeMap(stratum.submit(?))
-          |> RxOp.tap(report(["result", "error"], ?))
+          |> RxOp.tap(report(["result", "error "], ?))
           |> RxOp.finalize(stratum.close(?))
 }
 
