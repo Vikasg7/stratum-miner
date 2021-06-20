@@ -5,15 +5,15 @@ A stratum based crypto miner in Nodejs written in functional style for mining cr
 ```
 npm start -- [options]
 
-Options:  
-          --version  Show version number                             [boolean]  
-      -s, --server   stratum+tcp://host:port               [string] [required]  
-      -u, --user     username                              [string] [required]  
-      -p, --pass     password                              [string] [required]  
-      -i, --id       worker id                             [string] [required]  
-      -t, --threads  threads                  [number] [required] [default: 1]  
-      -a, --algo     sha256, scrypt    [number] [required] [default: "scrypt"]     
-          --help     Show help                                       [boolean]  
+Options:
+      --version  Show version number                                   [boolean]
+  -s, --server   stratum+tcp://host:port                     [string] [required]
+  -u, --user     username                                    [string] [required]
+  -p, --pass     password                                    [string] [required]
+  -i, --id       worker id                                   [string] [required]
+  -t, --threads  threads                        [number] [required] [default: 1]
+  -a, --algo     sha256, scrypt          [string] [required] [default: "scrypt"]
+      --help     Show help                                             [boolean]
 ```
 # Command  
 `npm start -- -s <stratum+tcp://host:port> -u <username> -p <password> -i <id> -t <threads> -a <algo>`  
