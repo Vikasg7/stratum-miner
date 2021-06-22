@@ -1,6 +1,12 @@
 # stratum-miner  
 A stratum based crypto miner in Nodejs written in functional style for mining crypto currency.
 
+# Installation
+```
+git clone https://github.com/Vikasg7/stratum-miner.git
+npm run build
+```
+
 # Usage
 ```
 npm start -- [options]

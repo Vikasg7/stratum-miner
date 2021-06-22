@@ -1,13 +1,12 @@
-const { join, map, concat,
-        take, reduce, nth } = require("ramda")
-const { toBytesLE, report, toHexLE, toHex, sha256d,
-        toBytes, lteLE, toHexBE, pickIdxs,
-        splitNumToRanges, fourByteReverse } = require("./utils")
+const { map, concat, take, reduce, nth } = require("ramda")
+const { report, toHexLE, toHexBE, pickIdxs, toHex, 
+        sha256d, splitNumToRanges, fourByteReverse } = require("./utils")
 const Rx = require("rxjs")
 const RxOp = require("rxjs/operators")
 const crypto = require("crypto")
 const url = require("url")
 const Stratum = require("./stratum")
+const threadCall = require("thread-call")
 
 // Calculation of merkel root is different for stratum
 // https://bitcoin.stackexchange.com/a/20885/123460
@@ -48,7 +47,8 @@ const blockHeader = (blockInfo, extraNonce2) => {
       , "00000000" // Placeholder nonce
       ]
 
-   return header |> map(toHexLE(?, "hex"))
+   return header
+          |> map(toHexLE(?, "hex"))
 }
 
 const MAX_NONCE = 2 ** 32
@@ -66,24 +66,14 @@ const mineBlock = (args, blockInfo) => {
       crypto.randomBytes(extraNonce2Size)
       |> toHex
    
-   const headBytes = 
+   const head = 
       blockHeader(blockInfo, extraNonce2)
       |> take(5)
-      |> join("")
-      |> toBytes(?, "hex")
 
-   const target =
-      toBytesLE(targetHex, "hex")
+   const target = toHexLE(targetHex, "hex")
 
-   const isGolden = (nonce) =>
-      [headBytes, toBytesLE(nonce, "u32")]
-      |> Buffer.concat
-      |> algo
-      |> ((hash) => lteLE(hash, target) ? [nonce] : [])
-
-   const findGoldenNonce = ([f, t]) =>
-      Rx.range(f, t - f, Rx.asyncScheduler)
-      |> RxOp.mergeMap(isGolden)
+   const findGoldenNonce = (nonceRange) =>
+      threadCall("./find-nonce", head, target, algo, nonceRange)
 
    // following should be big endian
    // https://github.com/slush0/stratum-mining/blob/b2a24d7424784cada95010232cdb79cfed481da6/mining/service.py#L136-L140

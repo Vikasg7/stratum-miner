@@ -2,10 +2,11 @@
    "name": "stratum-miner",
    "version": "1.0.0",
    "description": "",
-   "main": "index.js",
+   "main": "dist/index.js",
    "scripts": {
-      "tests": "babel-node -- tests",
-      "start": "babel-node -- src/index.js",
+      "start": "node dist/index.js",
+      "build": "babel src --out-dir dist",
+      "build-watch": "babel src --out-dir dist --watch",
       "repl": "babel-node"
    },
    "keywords": [],
@@ -25,6 +26,7 @@
       "crypto-algos": "github:Vikasg7/crypto-algos",
       "ramda": "^0.27.1",
       "rxjs": "^7.1.0",
+      "thread-call": "github:Vikasg7/thread-call",
       "yargs": "^17.0.1"
    }
 }
