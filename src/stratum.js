@@ -28,7 +28,7 @@ const Stratum = (config) => {
       |> RxOp.mergeMap(parseMsgs)
       |> RxOp.map(JSON.parse)
       |> RxOp.share()
-   
+
    const pushNotifications =
       notifications
       |> RxOp.filter(has("method"))
@@ -45,8 +45,8 @@ const Stratum = (config) => {
    const blocks =
       pushNotifications
       |> RxOp.filter(propEq("method", "mining.notify"))
-      |> RxOp.distinctUntilKeyChanged("params", byClearJobs)
       |> RxOp.pluck("params")
+      |> RxOp.distinctUntilChanged(byClearJobs)
 
    const target =
       pushNotifications
@@ -100,12 +100,14 @@ const Stratum = (config) => {
       |> nth(1)
       |> pickIdxs([1, 2])
 
+   const steps = 
+      [ connect(port, host)
+      , subscribe()
+      , authorize([user, pass])
+      ]
+
    const setupConnection =
-      Rx.concat(
-         connect(port, host),
-         subscribe(),
-         authorize([user, pass])
-      )
+      Rx.concat(...steps)
       |> RxOp.toArray() // waiting for all to finish
 
    const extraNonce =
